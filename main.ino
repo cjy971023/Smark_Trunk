@@ -32,11 +32,15 @@ int open_sig = false;
 
 int cnt = 0;
 int Mode = 2;
+int volatile ADresult;
+int deg_cnt = 0;
+int lock = 0;
 
 void read_distance0(void);
 void read_distance1(void);
 void stepmotor_open(void);
 void stepmotor_close(void);
+int result_ADC(void);
 
 // Initialize the stepper library on the motor shield:
 Stepper myStepper = Stepper(stepsPerRevolution, dirA, dirB);
@@ -66,7 +70,11 @@ void setup() {
   pinMode(echoPin1, INPUT);
   
   SerialASC.begin(9600);
-}
+
+  // ADC setup
+  analogReadResolution(12);
+    //deg_cnt = result_ADC(); // 90도 open 10도 단위
+}  
 
 
 void loop() {
@@ -74,7 +82,18 @@ void loop() {
   //  Mode
   //  1: Open  2: Close  3: Opening  4: Closing 5:Closing->Opening
   //////////////////////////////////////
-  int n = 9; // 90도 open 10도 단위
+
+
+  while(lock == 0)
+  {
+    deg_cnt = result_ADC();
+    //SerialASC.println(deg_cnt);
+    if (digitalRead(PUSH_SW) == FALSE) 
+    {
+      lock = 1;
+    }
+  }
+
   
 
   switch(Mode){
@@ -98,7 +117,7 @@ void loop() {
 
     case 3:
     
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < deg_cnt; i++){
           stepmotor_open();          
         }
         Mode = 1;
@@ -106,7 +125,7 @@ void loop() {
 
     case 4:
         
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < deg_cnt; i++){
           stepmotor_close();
           read_distance1();
           Mode = 2;
@@ -114,7 +133,7 @@ void loop() {
           if((distance1 < 5) && (distance1>0)){
             Mode = 5;
             cnt = i;
-            i = n;           
+            i = deg_cnt;           
           }
           
         }
@@ -199,4 +218,26 @@ void read_distance1(void)
    //SerialASC.println(distance1);
 
   delay(10);
+}
+
+int result_ADC(){
+  int n = 0;
+   ADresult=ReadAD0();
+    
+  if(ADresult<1400)
+  {
+    n = 6; 
+  }
+  else if((ADresult>1500)&&(ADresult<2800))
+  {
+      n = 9;
+  }
+  else if(ADresult>2900)
+  {
+     n = 12;
+  }
+  else
+  {
+  }
+  return n;
 }
