@@ -15,7 +15,7 @@ void loop() {
   tone(buzzerPin, 262, 500);
   delay(1000);
   noTone(buzzerPin);
-  delay(1000);
+  delay(300);
   
   tone(buzzerPin, 262, 500);
   delay(1000);
@@ -46,5 +46,5 @@ void loop() {
   tone(buzzerPin, 300, 500);
   delay(300);
   noTone(buzzerPin);
-  delay(300);
+  delay(1000);
 }
