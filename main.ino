@@ -75,6 +75,7 @@ void loop() {
   //  Mode
   //  1: Open  2: Close  3: Opening  4: Closing
   //////////////////////////////////////
+  int n = 9; // 90도 open 10도 단위
 
   switch(Mode){
     case 1:
@@ -83,11 +84,9 @@ void loop() {
     {
       Mode = 4;
     }
-
     break;
 
     case 2:
-
       // 초음파 센서 거리 측정
       read_distance0();
       read_switch();
@@ -95,22 +94,29 @@ void loop() {
       {
         Mode = 3;
       }
-     
     break;
 
     case 3:
-        stepmotor_open();
+    
+        for (int i = 0; i <= n; i++){
+          stepmotor_open();          
+        }
         Mode = 1;
     break;
 
     case 4:
-       stepmotor_close();
+        for (int i = 0; i <= n; i++){
+          stepmotor_close();         
+          read_distance1();
+          if 
+        }
        Mode = 2;
     break;
     
     default:
     break;
   }
+  
   SerialASC.println(Mode);
 }
 
@@ -125,11 +131,11 @@ void read_switch(void){
 }
 
 void stepmotor_open(){
-  myStepper.step(stepsPerRevolution);
+  myStepper.step(stepsPerRevolution/36);
 }
 
 void stepmotor_close(){
-  myStepper.step(-stepsPerRevolution);
+  myStepper.step(-stepsPerRevolution/36);
 }
 
 
