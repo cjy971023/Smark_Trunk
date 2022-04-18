@@ -1,4 +1,4 @@
-int buzzerPin = 2;
+int buzzerPin = 5;
 
 void setup() {
   pinMode(buzzerPin, OUTPUT);
