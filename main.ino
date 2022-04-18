@@ -27,11 +27,10 @@ sensor1가 클로즈하기 위한 거리 측정 센서
 //ultrasonic speed : 340m/s
 float duration0, distance0;
 float duration1, distance1;
-int pressed = false; 
+bool pressed = false; 
 int open_sig = false;
 
-int cnt1 = 0;
-int cnt2 = 0;
+int cnt = 0;
 int Mode = 2;
 
 void read_distance0(void);
@@ -73,14 +72,15 @@ void setup() {
 void loop() {
   ////////////////////////////////////////
   //  Mode
-  //  1: Open  2: Close  3: Opening  4: Closing
+  //  1: Open  2: Close  3: Opening  4: Closing 5:Closing->Opening
   //////////////////////////////////////
   int n = 9; // 90도 open 10도 단위
+  
 
   switch(Mode){
     case 1:
-    read_switch();
-    if (pressed == TRUE)
+    //read_switch();
+    if (digitalRead(PUSH_SW) == FALSE)
     {
       Mode = 4;
     }
@@ -89,8 +89,8 @@ void loop() {
     case 2:
       // 초음파 센서 거리 측정
       read_distance0();
-      read_switch();
-      if(((distance0 < 5) && (distance0>0)) || (pressed == TRUE))
+      //read_switch();
+      if(((distance0 < 5) && (distance0>0)) || (digitalRead(PUSH_SW) == FALSE))
       {
         Mode = 3;
       }
@@ -98,19 +98,34 @@ void loop() {
 
     case 3:
     
-        for (int i = 0; i <= n; i++){
+        for (int i = 0; i < n; i++){
           stepmotor_open();          
         }
         Mode = 1;
     break;
 
     case 4:
-        for (int i = 0; i <= n; i++){
-          stepmotor_close();         
+        
+        for (int i = 0; i < n; i++){
+          stepmotor_close();
           read_distance1();
-          if 
+          Mode = 2;
+          
+          if((distance1 < 5) && (distance1>0)){
+            Mode = 5;
+            cnt = i;
+            i = n;           
+          }
+          
         }
-       Mode = 2;
+      
+    break;
+
+    case 5:
+        for (int i = 0; i < cnt+1; i++){
+          stepmotor_open();          
+        }
+        Mode = 1;
     break;
     
     default:
@@ -122,20 +137,23 @@ void loop() {
 
 void read_switch(void){
     /* Read button */
+    /*
   if (digitalRead(PUSH_SW) == false) // push : 0, NOP : 1
   {
-    pressed = !pressed;
+    pressed = TRUE;
   }
   while (digitalRead(PUSH_SW) == false);
   delay(20); //ms
+  */
+  pressed = ~digitalRead(PUSH_SW);
 }
 
 void stepmotor_open(){
-  myStepper.step(stepsPerRevolution/36);
+  myStepper.step(6);    // 10도 회전
 }
 
 void stepmotor_close(){
-  myStepper.step(-stepsPerRevolution/36);
+  myStepper.step(-6);   // 10도 역회전
 }
 
 
@@ -155,10 +173,10 @@ void read_distance0(void)
   duration0 = pulseIn(echoPin0, HIGH, 11000); //time[us]
   distance0 = ((float)(duration0)*0.34/10)/2; //time[us]*speed[cm/us]
    
-   SerialASC.println("sensor0: ");
-   SerialASC.println(distance0);
+   //SerialASC.println("sensor0: ");
+   //SerialASC.println(distance0);
 
-  delay(100);
+  delay(10);
 }
 void read_distance1(void)
 {
@@ -180,5 +198,5 @@ void read_distance1(void)
    //SerialASC.println("sensor1: ");
    //SerialASC.println(distance1);
 
-  delay(100);
+  delay(10);
 }
